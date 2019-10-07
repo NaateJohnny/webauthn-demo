@@ -1,2 +1,36 @@
-'use strict';
+/* Handle for register form submission */
+$('#register').submit(function(event) {
+    event.preventDefault();
 
+    let username = this.username.value;
+    let name     = this.name.value;
+
+    if(!username || !name) {
+        alert('Name or username is missing!')
+        return
+    }
+
+    getMakeCredentialsChallenge({username, name})
+        .then((response) => {
+            console.log(response)
+        })
+
+})
+
+let getMakeCredentialsChallenge = (formBody) => {
+    return fetch('/webauthn/register', {
+        method: 'POST',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(formBody)
+    })
+    .then((response) => response.json())
+    .then((response) => {
+        if(response.status !== 'ok')
+            throw new Error(`Server responed with error. The message is: ${response.message}`);
+
+        return response
+    })
+}
