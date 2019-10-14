@@ -16,7 +16,8 @@ $('#register').submit(function(event) {
             return navigator.credentials.create({publicKey})
         })
         .then((newCred) => {
-            console.log(newCred)
+            let makeCredResponse = publicKeyCredentialToJSON(newCred)
+            console.log(makeCredResponse)
         })
 
 })
@@ -30,11 +31,17 @@ let getMakeCredentialsChallenge = (formBody) => {
         },
         body: JSON.stringify(formBody)
     })
-    .then((response) => response.json())
+    
     .then((response) => {
-        if(response.status !== 'ok')
-            throw new Error(`Server responed with error. The message is: ${response.message}`);
-
-        return response
+        let makeCredResponse = publicKeyCredentialToJSON(response);
+        return sendWebAuthnResponse(makeCredResponse)
     })
+    .then((response) => {
+        if(response.status === 'ok') {
+            loadMainContainer()   
+        } else {
+            alert(`Server responed with error. The message is: ${response.message}`);
+        }
+    })
+    .catch((error) => alert(error))
 }

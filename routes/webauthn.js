@@ -40,6 +40,38 @@ router.post('/register', (request, response) => {
 })
 
 
+router.post('/response', (request, response) => {
+    if(!request.body       || !request.body.id
+    || !request.body.rawId || !request.body.response
+    || !request.body.type  || request.body.type !== 'public-key' ) {
+        response.json({
+            'status': 'failed',
+            'message': 'Response missing one or more of id/rawId/response/type fields, or type is not public-key!'
+        })
+
+        return
+    }
+
+    let webauthnResp = request.body
+    let clientData   = JSON.parse(base64url.decode(webauthnResp.response.clientDataJSON));
+
+    /* Check challenge... */
+    if(clientData.challenge !== request.session.challenge) {
+        response.json({
+            'status': 'failed',
+            'message': 'Challenges don\'t match!'
+        })
+    }
+
+    /* ...and origin */
+    if(clientData.origin !== config.origin) {
+        response.json({
+            'status': 'failed',
+            'message': 'Origins don\'t match!'
+        })
+    }
+
+})
 
 
 /* ---------- ROUTES END ---------- */
